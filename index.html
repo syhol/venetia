@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Memory</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link href="https://fonts.googleapis.com/css?family=Courgette" rel="stylesheet">
+    <style>
+        .flip-container {
+            perspective: 1000px;
+            box-sizing: content-box;
+            padding: 65px;
+            width: 612px;
+            height: 462px;
+            user-select: none;
+            float: left;
+        }
+
+        .flip-container.enabled {
+            cursor: pointer;
+        }
+
+        .flip-container.toggle.enabled .flipper {
+            transform: rotateY(180deg);
+        }
+
+        .flip-container.enabled .front {
+            box-shadow: 0 0 50px 10px yellow;
+        }
+
+        .flip-container img {
+            width: 200px;
+            opacity: 0;
+        }
+
+        .flipper {
+            transition: 0.6s;
+            transform-style: preserve-3d;
+
+            position: relative;
+        }
+
+        .front, .back {
+            backface-visibility: hidden;
+            position: absolute;
+            top: 0;
+            left: 0;
+            border: #444 solid 6px;
+            border-radius: 3px;
+            box-sizing: content-box;
+            width: 600px;
+            height: 450px;
+        }
+
+        .front {
+            z-index: 2;
+            transform: rotateY(0deg);
+            background: #eeeeee;
+            background: url("assets/question-mark.png") center no-repeat;
+        }
+
+        .back {
+            transform: rotateY(180deg);
+            background: #ddd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .back-text {
+            font-family: 'Courgette', cursive;
+            font-size: 30px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .game {
+            position: relative;
+            float: left;
+            height: 592px;
+            width: 742px;
+
+        }
+
+        .venetia {
+            position: absolute;
+        }
+
+        .game .small {
+            position: absolute;
+            width: 40px;
+            height: 50px;
+        }
+
+        .info {
+            font-family: 'Courgette', cursive;
+            font-size: 30px;
+            padding: 20px;
+            text-align: center;
+            clear: both;
+        }
+    </style>
+</head>
+<body>
+<div class="flip-container" onclick="this.classList.contains('enabled') && this.classList.toggle('toggle');">
+    <div class="flipper">
+        <div class="front">
+            <img src="assets/photo-0-0.jpeg" alt="Blenheim Palace"><!--
+        --><img src="assets/photo-0-1.jpeg" alt="Blenheim Palace"><!--
+        --><img src="assets/photo-0-2.jpeg" alt="Blenheim Palace"><!--
+        --><img src="assets/photo-1-0.jpeg" alt="Blenheim Palace"><!--
+        --><img src="assets/photo-1-1.jpeg" alt="Blenheim Palace"><!--
+        --><img src="assets/photo-1-2.jpeg" alt="Blenheim Palace">
+        </div>
+        <div class="back">
+            <div class="back-text">
+                Vivamus condimentum felis a volutpat ultricies. Proin non magna nec lorem faucibus eleifend at eget
+                nulla. Phasellus lorem leo, tincidunt vitae neque at, tincidunt pellentesque turpis.
+                vel. Sed quis pharetra justo. Etiam porta nunc a aliquam lobortis.
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="game">
+    <img src="assets/venetia.png" class="venetia" style="top: 60px;">
+</div>
+
+<div class="info back-text">
+    Control Princess Venetia with the arrow keys to find the missing memory!
+</div>
+
+<script src="https://code.jquery.com/jquery-3.2.1.min.js"
+        integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+        crossorigin="anonymous"></script>
+<script>
+    var direction = 'still';
+    var venetia = document.querySelector('.venetia');
+    var game = document.querySelector('.game');
+    var current = null;
+    var images = [
+        'assets/photo-0-2.jpeg',
+        'assets/photo-1-0.jpeg',
+        'assets/photo-0-1.jpeg',
+        'assets/photo-1-1.jpeg',
+        'assets/photo-0-0.jpeg',
+        'assets/photo-1-2.jpeg'
+    ];
+
+    document.onkeydown = checkKey;
+    document.onkeyup = function () {
+        direction = 'still';
+    };
+
+
+    function isOverlap() {
+        return  current && !(
+            ((venetia.y + venetia.height) < (current.y)) ||
+            (venetia.y > (current.y + current.height)) ||
+            ((venetia.x + venetia.width) < current.x) ||
+            (venetia.x > (current.x + current.width))
+        );
+    }
+
+    function getRandomInt(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+
+    function placeNext() {
+        current = document.createElement("img");
+        current.src = images[images.length - 1];
+        current.classList.add('small');
+        current.style.top = getRandomInt(60, 500) + 'px';
+        current.style.left = getRandomInt(60, 600) + 'px';
+        game.appendChild(current);
+    }
+
+    function nextImage() {
+        current.remove();
+        showImage(images.pop());
+        if (images.length === 0) {
+            win();
+        } else {
+            placeNext();
+        }
+    }
+
+    function showImage(path) {
+        document.querySelector('.flip-container [src="' + path + '"]').style.opacity = 1;
+    }
+
+
+    function checkKey(e) {
+
+        e = e || window.event;
+
+        if (e.keyCode == '38') {
+            direction = 'up';
+        }
+        else if (e.keyCode == '40') {
+            direction = 'down';
+        }
+        else if (e.keyCode == '37') {
+            direction = 'left';
+        }
+        else if (e.keyCode == '39') {
+            direction = 'right';
+        }
+    }
+
+    function change(el, prop, increment) {
+        var temp = el.style[prop];
+        temp = parseInt(temp.slice(0, -2)) || 0;
+        temp = temp + increment;
+        el.style[prop] = temp + 'px';
+    }
+
+    function win() {
+        current = null;
+        document.querySelector('.flip-container').classList.add('enabled');
+        document.querySelector('.info').innerText = 'Flip the memory over to see the clue';
+    }
+
+    function moveSelection() {
+        if (direction === 'up') change(venetia, 'top', -2);
+        if (direction === 'down') change(venetia, 'top', 2);
+        if (direction === 'left') change(venetia, 'left', -2);
+        if (direction === 'right') change(venetia, 'left', 2);
+    }
+
+    function gameLoop() {
+        // change position based on speed
+        moveSelection();
+        isOverlap() && nextImage();
+        setTimeout(gameLoop,10);
+    }
+
+    placeNext();
+    gameLoop();
+
+</script>
+</body>
+</html>
